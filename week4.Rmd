@@ -1,0 +1,44 @@
+---
+title: "week 4 meeting"
+author: "lia"
+date: "1/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#library(tidyverse)
+library(lubridate)
+library(janitor)
+library(metajam)
+```
+
+```{r}
+## Download the data
+pal_url <- "https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-pal.88.7&entityid=c5abbed2edefecf30c659853df147282"
+
+pal_adelie_path <- download_d1_data(data_url = pal_url, path = 
+tempdir())
+# Read in data
+pal_files <- read_d1_files(pal_adelie_path)
+pal_data <- pal_files$data
+``` 
+```{r}
+# Simplify column names:
+pal_adelie <- pal_data %>%
+  clean_names()
+ 
+# Annual totals by island:
+annual_counts <- pal_adelie %>% 
+  pivot_longer(cols = adults:chicks, names_to = "age", values_to = "number") %>% 
+  mutate(year = year(date_gmt)) %>% 
+  group_by(island, year, age) %>% 
+  summarize(total_count = sum(number))
+ 
+ggplot(data = annual_counts, aes(x = year, y = total_count)) +
+  geom_line(aes(color = island)) +
+  facet_wrap(~age)
+```
