@@ -27,6 +27,9 @@ pal_files <- read_d1_files(pal_adelie_path)
 pal_data <- pal_files$data
 ``` 
 ```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 # Simplify column names:
 pal_adelie <- pal_data %>%
   clean_names()
@@ -42,3 +45,34 @@ ggplot(data = annual_counts, aes(x = year, y = total_count)) +
   geom_line(aes(color = island)) +
   facet_wrap(~age)
 ```
+
+Now, on the lobster dataset:
+```{r}
+## Download the data
+pal_url <- "https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-sbc.77.4&entityid=f32823fba432f58f66c06b589b7efac6"
+
+
+pal_lobster_path <- download_d1_data(data_url = pal_url, path = 
+tempdir())
+# Read in data
+pal_files <- read_d1_files(pal_lobster_path)
+pal_data <- pal_files$data
+```
+
+```{r}
+# Simplify column names:
+pal_lobster <- pal_data %>%
+  clean_names()
+
+ 
+# Annual totals by site, year, size:
+annual_counts <- pal_lobster %>% 
+  group_by(site, year, size_mm) %>% 
+  summarize(total_count = sum(count))
+ 
+# Plot count based on year + size, we can see how it varies between sites
+ggplot(data = annual_counts, aes(x = size_mm, y = total_count)) +
+  geom_line(aes(color = site)) +
+  facet_wrap(~year)
+```
+
